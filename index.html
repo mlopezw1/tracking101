@@ -200,6 +200,41 @@ small { font-size: 0.8em; }
 .toast q { quotes: none; font-family: var(--display); font-style: italic; font-size: 19px; line-height: 1.2; display: block; }
 .toast cite { display: block; margin-top: 4px; font-style: normal; font-size: 12px; color: var(--muted); }
 
+[hidden] { display: none !important; }
+.dates { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; }
+.dates label { display: grid; gap: 6px; min-width: 0; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.dates input { min-width: 0; padding: 10px 12px; border-radius: 14px; background: rgba(0, 0, 0, 0.22); border: 1px solid var(--faint); font-size: 15px; letter-spacing: 0; text-transform: none; font-weight: 500; color-scheme: dark; }
+.shead { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 12px; }
+.shead .big { font-family: var(--display); font-size: 44px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; }
+.shead span { color: var(--muted); }
+.sall { text-align: right; }
+.sall b { display: block; font-family: var(--display); font-size: 34px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; }
+.sall small { color: var(--muted); }
+.srow { display: grid; grid-template-columns: 64px 1fr 44px; align-items: center; gap: 10px; padding: 6px 0; font-weight: 600; }
+.srow b { text-align: right; font-variant-numeric: tabular-nums; }
+.mbars { height: 110px; display: flex; align-items: flex-end; gap: 2px; }
+.mbars i { flex: 1; min-width: 2px; border-radius: 4px 4px 2px 2px; background: linear-gradient(180deg, var(--mente), var(--cuerpo)); }
+.mbars i.z { background: var(--faint); }
+.axis { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.stat .note { display: block; margin-top: 2px; font-size: 11.5px; color: var(--muted); font-weight: 500; letter-spacing: 0; text-transform: none; }
+.lifts, .hitos { list-style: none; margin: 0; padding: 0; }
+.lifts li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 12px 0; border-top: 1px solid var(--faint); }
+.lifts li:first-child, .hitos li:first-child { border-top: 0; padding-top: 0; }
+.lifts b { font-weight: 700; }
+.lifts small { display: block; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sp { width: 80px; height: 30px; }
+.dl { min-width: 62px; text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.dl.up { color: #7be0a0; }
+.dl.down { color: var(--cuerpo); }
+.dl.flat { color: var(--muted); }
+.hitos li { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; padding: 10px 0; border-top: 1px solid var(--faint); overflow-wrap: anywhere; }
+.hitos .hd { color: var(--alma); font-weight: 700; font-size: 13px; text-transform: capitalize; }
+.backup { display: grid; gap: 12px; }
+.backup p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.row2 { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn.alt { background: var(--faint); color: var(--fg); cursor: pointer; }
+.imp { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.imp:focus-visible + * , .btn.alt:focus-within { outline: 2px solid var(--fg); }
 @media (prefers-reduced-motion: reduce) {
   .orbs i { animation: none; }
   * { transition-duration: 0.01ms !important; }
@@ -269,15 +304,39 @@ body { margin: 0; }
   </section>
 
   <section class="view" id="v-prog" hidden>
-    <div class="top"><div><h1>Progreso</h1><p>Últimos 7 días</p></div></div>
-    <div class="card glass"><div class="week" id="week"></div>
-      <div class="key"><span style="--c:var(--cuerpo)">Cuerpo</span><span style="--c:var(--mente)">Mente</span><span style="--c:var(--alma)">Alma</span></div></div>
+    <div class="top"><div><h1>Progreso</h1><p id="prog-sub"></p></div></div>
+    <div class="chips" id="ranges" role="group" aria-label="Periodo">
+      <button class="chip on" data-act="range" data-range="7">7 días</button>
+      <button class="chip" data-act="range" data-range="30">30 días</button>
+      <button class="chip" data-act="range" data-range="90">90 días</button>
+      <button class="chip" data-act="range" data-range="all">Todo</button>
+      <button class="chip" data-act="range" data-range="custom">Rango</button>
+    </div>
+    <div class="card glass dates" id="custom" hidden>
+      <label for="d-from">Desde<input type="date" id="d-from"></label>
+      <label for="d-to">Hasta<input type="date" id="d-to"></label>
+    </div>
+    <div class="card glass" id="summary"></div>
+    <div class="card glass" id="chart"></div>
     <div class="card glass"><div class="bigstreak"><b id="bs">0</b><span>días de racha</span></div>
       <p class="cap">Un día cuenta con 60 % o más. La racha perdona un día fallido.</p></div>
-    <div class="sec">Esta semana</div>
+    <div class="sec">Totales del periodo</div>
     <div class="stats" id="stats"></div>
-    <div class="sec">Mejores levantamientos</div>
+    <div class="sec">Fuerza en el periodo</div>
+    <div class="card glass"><ul class="lifts" id="lifts"></ul><p class="cap">La línea muestra tu 1RM estimado por sesión.</p></div>
+    <div class="sec">Hitos del periodo</div>
+    <div class="card glass"><ul class="hitos" id="hitos"></ul></div>
+    <div class="sec">Mejores levantamientos de siempre</div>
     <div class="card glass"><ul class="prs" id="prs"></ul></div>
+    <div class="sec">Tus datos</div>
+    <div class="card glass backup">
+      <p>Todo se guarda en este teléfono. Haz un respaldo de vez en cuando para no perder tu historial si borras los datos de Chrome.</p>
+      <div class="row2">
+        <button class="btn" data-act="export">Exportar respaldo</button>
+        <label class="btn alt" for="imp">Importar respaldo</label>
+        <input class="imp" type="file" id="imp" accept="application/json,.json">
+      </div>
+    </div>
   </section>
 </div>
 
@@ -453,24 +512,156 @@ body { margin: 0; }
     document.getElementById("today-sets").innerHTML = html;
   }
 
+  var P = { range: "7", from: "", to: "" };
+  var lastDay = todayKey();
+
+  function hasData(d) { return d.water > 0 || !!d.creatine || d.pages > 0 || d.deep > 0 || d.study > 0 || !!(d.hito && d.hito.trim()) || !!d.reflex || d.sets.length > 0; }
+  function fmtD(k) { return new Date(k + "T00:00").toLocaleDateString("es", { day: "numeric", month: "short" }); }
+  function r1(x) { return Math.round(x * 10) / 10; }
+
+  function rangeKeys() {
+    var today = new Date(), end = new Date(today.getFullYear(), today.getMonth(), today.getDate()), start;
+    if (P.range === "custom" && P.from && P.to) {
+      start = new Date(P.from + "T00:00"); end = new Date(P.to + "T00:00");
+      if (end < start) { var sw = start; start = end; end = sw; }
+    } else if (P.range === "all") {
+      var ks = Object.keys(S.days).filter(function (k) { return hasData(S.days[k]); }).sort();
+      start = ks.length ? new Date(ks[0] + "T00:00") : end;
+    } else start = addDays(end, -(parseInt(P.range, 10) - 1 || 6));
+    var out = [];
+    for (var d = new Date(start); d <= end && out.length < 1500; d = addDays(d, 1)) out.push(dkey(d));
+    return out.length ? out : [todayKey()];
+  }
+
+  function sparkline(vals) {
+    var w = 80, h = 30, p = 4, min = Math.min.apply(null, vals), max = Math.max.apply(null, vals), flat = max === min;
+    var pts = vals.map(function (v, i) {
+      var x = vals.length === 1 ? w / 2 : p + i * (w - 2 * p) / (vals.length - 1);
+      var y = flat ? h / 2 : h - p - (v - min) / (max - min) * (h - 2 * p);
+      return x.toFixed(1) + "," + y.toFixed(1);
+    });
+    var last = pts[pts.length - 1].split(",");
+    return '<svg class="sp" viewBox="0 0 ' + w + " " + h + '" aria-hidden="true">' +
+      (vals.length > 1 ? '<polyline points="' + pts.join(" ") + '" fill="none" stroke="var(--cuerpo)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' : "") +
+      '<circle cx="' + last[0] + '" cy="' + last[1] + '" r="3" fill="var(--cuerpo)"/></svg>';
+  }
+
   function renderProg() {
-    var t = new Date(), wk = "", totals = { water: 0, pages: 0, deep: 0, study: 0, vol: 0, ses: 0 }, names = ["D", "L", "M", "X", "J", "V", "S"];
-    for (var i = 6; i >= 0; i--) {
-      var dt = addDays(t, -i), d = get(dkey(dt)), p = pcts(d);
-      totals.water += d.water; totals.pages += d.pages; totals.deep += d.deep; totals.study += d.study;
-      totals.vol += d.sets.reduce(function (a, x) { return a + x.w * x.r; }, 0); if (d.sets.length) totals.ses++;
-      wk += '<div class="wd ' + (i === 0 ? "today" : "") + '"><div class="bars"><i style="--c:var(--cuerpo);height:' + Math.max(4, Math.round(p.cuerpo * 100)) + '%"></i><i style="--c:var(--mente);height:' + Math.max(4, Math.round(p.mente * 100)) + '%"></i><i style="--c:var(--alma);height:' + Math.max(4, Math.round(p.alma * 100)) + '%"></i></div><span>' + names[dt.getDay()] + "</span></div>";
+    var wd = ["D", "L", "M", "X", "J", "V", "S"];
+    document.querySelectorAll("[data-range]").forEach(function (b) { b.classList.toggle("on", b.dataset.range === P.range); });
+    document.getElementById("custom").hidden = P.range !== "custom";
+    var keys = rangeKeys(), n = keys.length;
+    var rows = keys.map(function (k) { return { k: k, d: get(k) }; });
+    var reg = rows.filter(function (r) { return hasData(r.d); });
+    document.getElementById("prog-sub").textContent = n > 1 ? fmtD(keys[0]) + " – " + fmtD(keys[n - 1]) : fmtD(keys[0]);
+
+    var avg = { cuerpo: 0, mente: 0, alma: 0, all: 0 }, id;
+    reg.forEach(function (r) { var p = pcts(r.d); for (var q in avg) avg[q] += p[q]; });
+    if (reg.length) for (id in avg) avg[id] /= reg.length;
+    function prow(key, label) { var v = Math.round(avg[key] * 100); return '<div class="srow" style="--c:var(--' + key + ')"><span>' + label + '</span><div class="bar"><i style="width:' + v + '%"></i></div><b>' + v + "%</b></div>"; }
+    document.getElementById("summary").innerHTML = '<div class="shead"><div><b class="big">' + reg.length + "</b><span> de " + n + (n === 1 ? " día" : " días") + ' con registro</span></div><div class="sall"><b>' + Math.round(avg.all * 100) + "%</b><small>promedio</small></div></div>" +
+      (reg.length ? prow("cuerpo", "Cuerpo") + prow("mente", "Mente") + prow("alma", "Alma") : '<p class="empty">Aún no hay registros en este periodo.</p>');
+
+    var ch;
+    if (n <= 7) {
+      ch = '<div class="week" style="grid-template-columns:repeat(' + n + ',1fr)">' + rows.map(function (r) {
+        var p = pcts(r.d), dt = new Date(r.k + "T00:00");
+        function bar(c, v) { return '<i style="--c:var(--' + c + ');height:' + Math.max(4, Math.round(v * 100)) + '%"></i>'; }
+        return '<div class="wd ' + (r.k === todayKey() ? "today" : "") + '"><div class="bars">' + bar("cuerpo", p.cuerpo) + bar("mente", p.mente) + bar("alma", p.alma) + "</div><span>" + wd[dt.getDay()] + "</span></div>";
+      }).join("") + '</div><div class="key"><span style="--c:var(--cuerpo)">Cuerpo</span><span style="--c:var(--mente)">Mente</span><span style="--c:var(--alma)">Alma</span></div>';
+    } else {
+      var size = n <= 31 ? 1 : 7, buckets = [];
+      for (var i = 0; i < n; i += size) buckets.push(rows.slice(i, i + size));
+      ch = '<div class="mbars">' + buckets.map(function (b) {
+        var rg = b.filter(function (r) { return hasData(r.d); });
+        var v = rg.length ? rg.reduce(function (a, r) { return a + pcts(r.d).all; }, 0) / rg.length : 0;
+        return '<i class="' + (rg.length ? "" : "z") + '" style="height:' + Math.max(3, Math.round(v * 100)) + '%" title="' + fmtD(b[0].k) + ": " + Math.round(v * 100) + ' %"></i>';
+      }).join("") + '</div><div class="axis"><span>' + fmtD(keys[0]) + "</span><span>" + (size > 1 ? "promedio por semana" : "puntaje de cada día") + "</span><span>" + fmtD(keys[n - 1]) + "</span></div>";
     }
-    document.getElementById("week").innerHTML = wk;
+    document.getElementById("chart").innerHTML = ch;
     document.getElementById("bs").textContent = streak();
-    function st(l, v, u) { return '<div class="stat"><small>' + l + "</small><b>" + v + (u ? " <small>" + u + "</small>" : "") + "</b></div>"; }
-    document.getElementById("stats").innerHTML = st("Agua", totals.water, "vasos") + st("Páginas", totals.pages, "") + st("Trabajo profundo", fmt(totals.deep), "h") + st("Estudio", fmt(totals.study), "h") +
-      st("Entrenos", totals.ses, "") + st("Volumen", Math.round(totals.vol).toLocaleString("es"), "kg");
+
+    var T = { water: 0, pages: 0, deep: 0, study: 0, vol: 0, ses: 0, sets: 0, cre: 0, ref: 0 };
+    rows.forEach(function (r) {
+      var d = r.d;
+      T.water += d.water; T.pages += d.pages; T.deep += d.deep; T.study += d.study;
+      T.cre += d.creatine ? 1 : 0; T.ref += d.reflex ? 1 : 0;
+      T.vol += d.sets.reduce(function (a, x) { return a + x.w * x.r; }, 0);
+      T.sets += d.sets.length; if (d.sets.length) T.ses++;
+    });
+    var nd = reg.length || 1;
+    function perDay(v) { return "prom. " + fmt(r1(v / nd)) + " por día"; }
+    function st(l, v, u, note) { return '<div class="stat"><small>' + l + "</small><b>" + v + (u ? " <small>" + u + "</small>" : "") + '</b><span class="note">' + note + "</span></div>"; }
+    document.getElementById("stats").innerHTML =
+      st("Agua", fmt(r1(T.water)), "vasos", perDay(T.water)) + st("Lectura", fmt(r1(T.pages)), "págs", perDay(T.pages)) +
+      st("Trabajo profundo", fmt(r1(T.deep)), "h", perDay(T.deep)) + st("Estudio", fmt(r1(T.study)), "h", perDay(T.study)) +
+      st("Entrenos", T.ses, "días", T.sets + " series") + st("Volumen", Math.round(T.vol).toLocaleString("es"), "kg", T.ses ? "prom. " + Math.round(T.vol / T.ses).toLocaleString("es") + " kg por entreno" : "sin entrenos") +
+      st("Creatina", T.cre, "días", Math.round(T.cre / nd * 100) + " % de los días") + st("Reflexión", T.ref, "noches", Math.round(T.ref / nd * 100) + " % de los días");
+
+    var ex = {};
+    rows.forEach(function (r) {
+      r.d.sets.forEach(function (s) { var e = ex[s.ex] || (ex[s.ex] = {}), cur = e[r.k]; if (!cur || e1rm(s) > e1rm(cur)) e[r.k] = s; });
+    });
+    var exNames = Object.keys(ex).sort();
+    document.getElementById("lifts").innerHTML = exNames.length ? exNames.map(function (name) {
+      var days = Object.keys(ex[name]).sort(), vals = days.map(function (k) { return e1rm(ex[name][k]); }), top = ex[name][days[days.length - 1]];
+      var delta = vals[vals.length - 1] - vals[0], cls = days.length < 2 ? "flat" : delta > 0.05 ? "up" : delta < -0.05 ? "down" : "flat";
+      var txt = days.length < 2 ? "1 sesión" : (delta > 0 ? "+" : "") + fmt(r1(delta)) + " kg";
+      return "<li><div><b>" + esc(name) + "</b><small>" + days.length + (days.length === 1 ? " sesión" : " sesiones") + " · último " + fmt(top.w) + " kg × " + top.r + "</small></div>" + sparkline(vals) + '<div class="dl ' + cls + '">' + txt + "</div></li>";
+    }).join("") : '<li><span class="empty">Sin series registradas en este periodo.</span></li>';
+
+    var hs = rows.filter(function (r) { return r.d.hito && r.d.hito.trim(); }).reverse().slice(0, 40);
+    document.getElementById("hitos").innerHTML = hs.length ? hs.map(function (r) { return '<li><span class="hd">' + fmtD(r.k) + "</span><span>" + esc(r.d.hito.trim()) + "</span></li>"; }).join("") : '<li><span class="empty">Todavía no escribiste hitos en este periodo.</span></li>';
+
     var best = {};
     allSets().forEach(function (o) { var b = best[o.s.ex]; if (!b || e1rm(o.s) > e1rm(b.s)) best[o.s.ex] = o; });
-    var keys = Object.keys(best).sort(function (a, b) { return e1rm(best[b].s) - e1rm(best[a].s); });
-    document.getElementById("prs").innerHTML = keys.length ? keys.map(function (k) { var o = best[k]; return "<li><b>" + esc(k) + "</b><span>" + fmt(o.s.w) + " kg × " + o.s.r + "</span></li>"; }).join("") : '<li><span>Registra series para ver tus récords.</span></li>';
+    var bk = Object.keys(best).sort(function (a, b) { return e1rm(best[b].s) - e1rm(best[a].s); });
+    document.getElementById("prs").innerHTML = bk.length ? bk.map(function (k) { var o = best[k]; return "<li><b>" + esc(k) + "</b><span>" + fmt(o.s.w) + " kg × " + o.s.r + "</span></li>"; }).join("") : '<li><span>Registra series para ver tus récords.</span></li>';
   }
+
+  function exportData() {
+    var blob = new Blob([JSON.stringify(S)], { type: "application/json" }), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "tracking101-respaldo-" + todayKey() + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+    toast("Respaldo exportado", false);
+  }
+  function importData(text) {
+    try {
+      var inc = JSON.parse(text), c = 0;
+      if (!inc || typeof inc.days !== "object") throw new Error("formato");
+      Object.keys(inc.days).forEach(function (k) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(k)) return;
+        var d = blank(), s = inc.days[k] || {};
+        ["water", "creatine", "pages", "deep", "study", "reflex"].forEach(function (f) { d[f] = +s[f] || 0; });
+        d.hito = typeof s.hito === "string" ? s.hito : "";
+        d.sets = Array.isArray(s.sets) ? s.sets.filter(function (x) { return x && x.ex && isFinite(x.w) && isFinite(x.r); }) : [];
+        S.days[k] = d; c++;
+      });
+      S.example = false; save(); renderAll();
+      toast("Respaldo importado: " + c + " días", false);
+    } catch (e) { toast("No pude leer ese archivo", false); }
+  }
+  document.addEventListener("change", function (e) {
+    var t = e.target;
+    if (t.id === "d-from") { P.from = t.value; renderProg(); }
+    else if (t.id === "d-to") { P.to = t.value; renderProg(); }
+    else if (t.id === "imp" && t.files && t.files[0]) {
+      var rd = new FileReader();
+      rd.onload = function () { importData(String(rd.result)); };
+      rd.readAsText(t.files[0]); t.value = "";
+    }
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && todayKey() !== lastDay) {
+      lastDay = todayKey();
+      var h = new Date().getHours();
+      document.getElementById("hi").textContent = h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches";
+      document.getElementById("date").textContent = new Date().toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" });
+      renderAll();
+    }
+  });
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
 
   function renderAll() { renderPillars(); renderQuote(); renderGym(); renderProg(); updateTop(); }
 
@@ -508,6 +699,8 @@ body { margin: 0; }
       d.sets.push(s2); save(); renderGym(); renderPillars(); updateTop();
       if (s2.pr) toast("Récord personal en " + G.ex, true); else toast("Serie registrada", false);
     } else if (a === "del") { D().sets.splice(parseInt(b.dataset.i, 10), 1); save(); renderGym(); renderPillars(); updateTop(); }
+    else if (a === "range") { P.range = b.dataset.range; if (P.range === "custom") { if (!P.from || !P.to) { P.from = dkey(addDays(new Date(), -29)); P.to = todayKey(); } document.getElementById("d-from").value = P.from; document.getElementById("d-to").value = P.to; } renderProg(); }
+    else if (a === "export") { exportData(); }
     else if (a === "reset") { S = { days: {}, example: false }; D(); save(); renderAll(); toast("Todo en cero. Empieza hoy.", false); }
   });
   document.addEventListener("input", function (e) {

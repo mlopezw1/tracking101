@@ -1,4 +1,4 @@
-var CACHE = "tracking101-v1";
+var CACHE = "tracking101-v2";
 var CORE = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", function (e) {
